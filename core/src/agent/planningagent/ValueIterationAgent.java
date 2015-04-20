@@ -8,6 +8,7 @@ import environnement.gridworld.ActionGridworld;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 
 
 /**
@@ -75,10 +76,13 @@ public class ValueIterationAgent extends PlanningValueAgent {
      */
     @Override
     public Action getAction(Etat e) {
-        //*** VOTRE CODE
-
-
-        return ActionGridworld.NONE;
+        List<Action> actions = getPolitique(e);
+        if(actions.size() == 1) {
+            return actions.get(0);
+        } else {
+            Random rdm = new Random(System.currentTimeMillis());
+            return actions.get(rdm.nextInt(actions.size()));
+        }
     }
 
     @Override
@@ -92,8 +96,26 @@ public class ValueIterationAgent extends PlanningValueAgent {
     @Override
     public List<Action> getPolitique(Etat _e) {
         List<Action> l = new ArrayList<Action>();
-        //*** VOTRE CODE
         List<Action> actions = mdp.getActionsPossibles(_e);
+        double maxvalue=0;
+        for(Action cAction : actions) {
+            try {
+                HashMap<Etat, Double> hash = (HashMap<Etat, Double>) mdp.getEtatTransitionProba(_e, cAction);
+                double sum = 0;
+                for(Etat dEtat : hash.keySet()) {
+                    sum += hash.get(dEtat) * (mdp.getRecompense(_e, cAction, dEtat) + gamma * values[dEtat.indice()]);
+                }
+                if(sum>maxvalue){
+                    maxvalue=sum;
+                    l.clear();
+                    l.add(cAction);
+                }else if(sum==maxvalue){
+                    l.add(cAction);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
         return l;
 
     }
