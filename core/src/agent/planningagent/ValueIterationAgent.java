@@ -6,6 +6,7 @@ import environnement.MDP;
 import environnement.gridworld.ActionGridworld;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 
@@ -16,8 +17,10 @@ import java.util.List;
  * @author laetitiamatignon
  */
 public class ValueIterationAgent extends PlanningValueAgent {
-    //*** VOTRE CODE
 
+    private double gamma;
+
+    private double[] values;
 
     /**
      * @param gamma
@@ -25,16 +28,16 @@ public class ValueIterationAgent extends PlanningValueAgent {
      */
     public ValueIterationAgent(double gamma, MDP mdp) {
         super(mdp);
-
-        //*** VOTRE CODE
-
-
+        this.gamma = gamma;
+        this.values = new double[mdp.getNbEtats()];
+        for(double d : this.values) {
+            d = 0;
+        }
     }
 
 
     public ValueIterationAgent(MDP mdp) {
         this(0.9, mdp);
-
     }
 
     /**
@@ -43,13 +46,26 @@ public class ValueIterationAgent extends PlanningValueAgent {
     @Override
     public void updateV() {
         this.delta = 0.0;
-        //*** VOTRE CODE
-
-
-        // mise a jour vmax et vmin pour affichage
-        // ...
-
-        //******************* a laisser a la fin de la methode
+        double[] clValues = new double[mdp.getNbEtats()];
+        List<Etat> etats = mdp.getEtatsAccessibles();
+        for(Etat cEtat : etats) {
+            List<Action> actions = mdp.getActionsPossibles(cEtat);
+            ArrayList<Double> max = new ArrayList<Double>();
+            for(Action cAction : actions) {
+                try {
+                    HashMap<Etat, Double> hash = (HashMap<Etat, Double>) mdp.getEtatTransitionProba(cEtat, cAction);
+                    double sum = 0;
+                    for(Etat dEtat : hash.keySet()) {
+                        sum += hash.get(dEtat) * (mdp.getRecompense(cEtat, cAction, dEtat) + gamma * values[dEtat.indice()]);
+                    }
+                    max.add(sum);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            clValues[cEtat.indice()] =  max.stream().mapToDouble(m -> m.doubleValue()).max().getAsDouble();
+        }
+        this.values = clValues;
         this.notifyObs();
     }
 
@@ -67,9 +83,7 @@ public class ValueIterationAgent extends PlanningValueAgent {
 
     @Override
     public double getValeur(Etat _e) {
-        //*** VOTRE CODE
-
-        return 0.0;
+        return values[_e.indice()];
     }
 
     /**
@@ -79,8 +93,7 @@ public class ValueIterationAgent extends PlanningValueAgent {
     public List<Action> getPolitique(Etat _e) {
         List<Action> l = new ArrayList<Action>();
         //*** VOTRE CODE
-
-
+        List<Action> actions = mdp.getActionsPossibles(_e);
         return l;
 
     }
@@ -88,22 +101,15 @@ public class ValueIterationAgent extends PlanningValueAgent {
     @Override
     public void reset() {
         super.reset();
-        //*** VOTRE CODE
-
-		
-		
-		
-		
-		/*-----------------*/
+        this.gamma = 0;
+        this.values = new double[mdp.getNbEtats()];
         this.notifyObs();
-
     }
 
 
     @Override
     public void setGamma(double arg0) {
-        //*** VOTRE CODE
-
+        this.gamma = arg0;
     }
 
 
