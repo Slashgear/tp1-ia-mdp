@@ -79,9 +79,11 @@ public class ValueIterationAgent extends PlanningValueAgent {
         List<Action> actions = getPolitique(e);
         if(actions.size() == 1) {
             return actions.get(0);
-        } else {
+        } else if(actions.size() > 0) {
             Random rdm = new Random(System.currentTimeMillis());
             return actions.get(rdm.nextInt(actions.size()));
+        } else {
+            return ActionGridworld.NONE;
         }
     }
 
