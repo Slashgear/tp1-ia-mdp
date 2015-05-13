@@ -5,10 +5,7 @@ import environnement.Etat;
 import environnement.MDP;
 import environnement.gridworld.ActionGridworld;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 
 /**
@@ -49,6 +46,7 @@ public class ValueIterationAgent extends PlanningValueAgent {
         this.delta = 0.0;
         double[] clValues = new double[mdp.getNbEtats()];
         List<Etat> etats = mdp.getEtatsAccessibles();
+
         for(Etat cEtat : etats) {
             List<Action> actions = mdp.getActionsPossibles(cEtat);
             ArrayList<Double> max = new ArrayList<Double>();
@@ -67,6 +65,8 @@ public class ValueIterationAgent extends PlanningValueAgent {
             clValues[cEtat.indice()] =  max.stream().mapToDouble(m -> m.doubleValue()).max().getAsDouble();
         }
         this.values = clValues;
+        this.vmax = Arrays.stream(clValues).max().getAsDouble();
+        this.vmin = Arrays.stream(clValues).min().getAsDouble();
         this.notifyObs();
     }
 
@@ -99,7 +99,7 @@ public class ValueIterationAgent extends PlanningValueAgent {
     public List<Action> getPolitique(Etat _e) {
         List<Action> l = new ArrayList<Action>();
         List<Action> actions = mdp.getActionsPossibles(_e);
-        double maxvalue=0;
+        double maxvalue= Double.NEGATIVE_INFINITY;
         for(Action cAction : actions) {
             try {
                 HashMap<Etat, Double> hash = (HashMap<Etat, Double>) mdp.getEtatTransitionProba(_e, cAction);
